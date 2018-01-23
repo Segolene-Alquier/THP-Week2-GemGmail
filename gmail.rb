@@ -1,6 +1,48 @@
-require "gmail"
+require 'gmail'
+require_relative 'scrap_scrap2.rb'
 require "google_drive"
-require "pry"
+
+###########################
+#get access to spreadsheet#
+###########################
+
+session = GoogleDrive::Session.from_config("config2.json")
+w = session.spreadsheet_by_key("1fEfrXkWXJ2E7sP3365ZX8HbeFqDVRP1OwVCo12B6nl4").worksheets[0]
+
+#######
+#email#
+#######
+
+#authentification
+puts "Gmail username (or email):"
+login = gets.chomp
+puts "Gmail password for '#{login}':"
+pw = gets.chomp
+gmail = Gmail.connect(login, pw)
+
+#test if connection was successful?
+puts "*Successfully logged in to Gmail servers!" if gmail.logged_in? == true
+
+#compose + send email to each database email
+y = 2
+until (w[y, 1] == '' && w[y, 2] == '') #Tant que la case du spreadsheet est remplie
+  gmail.deliver do
+    to w[y, 2] #à 'email'
+    subject "IMPORTANT - The HACKING Project"
+    text_part do
+      body "https://www.thehackingproject.org"
+    end
+  end
+puts "Email sent to #{w[y, 2]}" #CLI feedback
+y += 1
+end
+
+#disconnect
+gmail.logout
+
+
+
+=begin
 
 def connect()
   gmail = Gmail.connect("the.hacking.roger@gmail.com", "hackingroger38")
@@ -24,18 +66,6 @@ def perform()
 end
 
 perform()
-
-=begin
-  email = gmail.compose do
-    to "segolene.alquier@gmail.com"
-    subject "Having fun in Puerto Rico!"
-    body "Spent the day on the road..."
-  end
-email.deliver
-end
-perform()
-
-
 
 
 def connect()
